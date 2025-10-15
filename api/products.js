@@ -4,9 +4,15 @@ export default async function handler(req, res) {
   try {
     const { data } = await axios.get(apiURL, {
       headers: {
-        Referer: "https://www.nanocell.com.ar/catalogo2024.php",
+        // Simula ser un navegador Chrome en Windows
         "User-Agent":
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36",
+
+        // Simula que la solicitud viene desde la página principal
+        Referer: "https://www.nanocell.com.ar/catalogo2024.php",
+
+        // A veces ayuda a confirmar que esperamos JSON
+        Accept: "application/json, text/plain, */*",
       },
     });
 
