@@ -1,53 +1,54 @@
 import axios from "axios";
-const apiURL = "https://www.nanocell.com.ar/api/obtenerproductos.php";
+import * as cheerio from "cheerio";
+
 export default async function handler(req, res) {
   try {
-    const { data } = await axios.get(apiURL, {
-      headers: {
-        // Simula ser un navegador Chrome en Windows
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36",
+    const { data } = await axios.get(
+      "https://www.nanocell.com.ar/catalogo2024.php",
+      {
+        headers: {
+          // Copiado de los headers de tu navegador para simularlo
+          Accept:
+            "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+          "Accept-Encoding": "gzip, deflate, br, zstd",
+          "Accept-Language": "es-US,es;q=0.9,en;q=0.8,en;q=0.7",
+          Connection: "keep-alive",
+          // El User-Agent es crucial para que el servidor piense que es Chrome
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36", // Usar un User-Agent reciente
+        },
+      }
+    );
+    const $ = cheerio.load(data);
 
-        // Simula que la solicitud viene desde la página principal
-        Referer: "https://www.nanocell.com.ar/catalogo2024.php",
+    const productos = [];
 
-        // A veces ayuda a confirmar que esperamos JSON
-        Accept: "application/json, text/plain, */*",
-      },
+    $(".caja_producto").each((i, el) => {
+      const nombre = $(el).find(".descrp h1").text().trim();
+      const imagen = $(el).find(".miniatura_imagen img").attr("src");
+      const precioTexto = $(el).find(".datos strong").text().trim();
+
+      const precio = parseFloat(
+        precioTexto.replace("$", "").replace(".", "").replace(",", ".")
+      );
+
+      if (nombre && !isNaN(precio)) {
+        const ganancia = 0.25; // 25% de ganancia
+        const precioFinal = (precio * (1 + ganancia)).toFixed(2);
+
+        productos.push({
+          id: i + 1,
+          nombre,
+          precioBase: precio,
+          precioFinal,
+          imagen: imagen ? `https://www.nanocell.com.ar/${imagen}` : null,
+        });
+      }
     });
 
-    const productosProcesados = data
-      .map((producto, index) => {
-        const nombre = producto.descripcion
-          ? producto.descripcion.trim()
-          : "Sin Nombre";
-        const imagen = producto.imagen;
-        const precioTexto = producto.precio ? producto.precio.toString() : "0";
-        const precioBaseTextoLimpio = precioTexto
-          .replace(".", "")
-          .replace(",", ".");
-
-        const precio = parseFloat(precioBaseTextoLimpio);
-        if (nombre && !isNaN(precio) && precio > 0) {
-          const ganancia = 0.25; // 25% de ganancia
-          const precioFinal = (precio * (1 + ganancia)).toFixed(2);
-
-          return {
-            id: index + 1,
-            nombre,
-            precioBase: parseFloat(precio.toFixed(2)),
-            precioFinal: parseFloat(precioFinal),
-            imagen: imagen ? `https://www.nanocell.com.ar/${imagen}` : null,
-          };
-        }
-
-        return null;
-      })
-      .filter((producto) => producto !== null);
-
-    res.status(200).json(productosProcesados);
+    res.status(200).json(productos);
   } catch (error) {
-    console.error("Error al obtener productos de la API:", error.message);
-    res.status(500).json({ error: "Error obteniendo productos de la API" });
+    console.error("Error al scrapear:", error.message);
+    res.status(500).json({ error: "Error obteniendo productos" });
   }
 }
