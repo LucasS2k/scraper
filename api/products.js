@@ -29,10 +29,10 @@ export default async function handler(req, res) {
     const htmlContent = await page.content();
 
     const $ = cheerio.load(htmlContent);
-
+    const selector = ".col-md-6.col-lg-3.caja_producto";
     const productos = [];
 
-    $(".caja_producto").each((i, el) => {
+    $(selector).each((i, el) => {
       const nombre = $(el).find(".descrp h1").text().trim();
       const imagen = $(el).find(".miniatura_imagen img").attr("src");
 
@@ -57,26 +57,23 @@ export default async function handler(req, res) {
       }
     });
     if (productos.length === 0) {
-      return res
-        .status(200)
-        .json({
-          status: "SUCCESS_NO_PRODUCTS_FOUND",
-          message:
-            "Se obtuvo el HTML pero no se encontraron productos con el selector.",
-        });
+      return res.status(200).json({
+        status: "SUCCESS_NO_PRODUCTS_FOUND",
+        message:
+          "Se obtuvo el HTML pero no se encontraron productos con el selector.",
+      });
     }
 
     res.status(200).json(productos);
   } catch (error) {
-    // Es fundamental ver este error en los logs de Vercel
     console.error("Error al scrapear con Puppeteer:", error.message);
-    // Si falla, devolvemos un 500 para el cliente
+
     res
       .status(500)
       .json({ error: `Error obteniendo productos: ${error.message}` });
   } finally {
     if (browser) {
-      await browser.close(); // Cerrar el navegador para liberar recursos
+      await browser.close();
     }
   }
 }
