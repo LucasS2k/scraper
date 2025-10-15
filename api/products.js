@@ -1,10 +1,14 @@
 import axios from "axios";
-
+const apiURL = "https://www.nanocell.com.ar/api/obtenerproductos.php";
 export default async function handler(req, res) {
   try {
-    const { data } = await axios.get(
-      "https://www.nanocell.com.ar/api/obtenerproductos.php"
-    );
+    const { data } = await axios.get(apiURL, {
+      headers: {
+        Referer: "https://www.nanocell.com.ar/catalogo2024.php",
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36",
+      },
+    });
 
     const productosProcesados = data
       .map((producto, index) => {
