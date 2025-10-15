@@ -1,9 +1,11 @@
 {
   "version": 2,
-  "builds": [
-    { "src": "api/products.js", "use": "@vercel/node" }
-  ],
-  "routes": [
-    { "src": "/(.*)", "dest": "/api/products.js" }
-  ]
+  "builds": [{ "src": "api/products.js", "use": "@vercel/node" }],
+  "routes": [{ "src": "/(.*)", "dest": "/api/products.js" }],
+  "functions": {
+    "api/**/*.js": {
+      "maxDuration": 60,
+      "memory": 1024
+    }
+  }
 }
