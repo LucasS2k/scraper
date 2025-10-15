@@ -33,8 +33,8 @@ export default async function handler(req, res) {
     const productos = [];
 
     $(selector).each((i, el) => {
-      const nombre = $(el).find(".descrp h1").text().trim();
-      const imagen = $(el).find(".miniatura_imagen img").attr("src");
+      const nombre = $(el).find(".descrip h1").text().trim();
+      const imagen = $(el).find(".foto .miniatura_imagen img").attr("src");
 
       const precioTexto = $(el).find(".datos strong").text().trim();
 
