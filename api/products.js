@@ -1,41 +1,43 @@
 import axios from "axios";
-import * as cheerio from "cheerio";
 
 export default async function handler(req, res) {
   try {
     const { data } = await axios.get(
-      "https://www.nanocell.com.ar/catalogo2024.php"
+      "https://www.nanocell.com.ar/api/obtenerproductos.php"
     );
-    const $ = cheerio.load(data);
 
-    const productos = [];
+    const productosProcesados = data
+      .map((producto, index) => {
+        const nombre = producto.descripcion
+          ? producto.descripcion.trim()
+          : "Sin Nombre";
+        const imagen = producto.imagen;
+        const precioTexto = producto.precio ? producto.precio.toString() : "0";
+        const precioBaseTextoLimpio = precioTexto
+          .replace(".", "")
+          .replace(",", ".");
 
-    $(".caja_producto").each((i, el) => {
-      const nombre = $(el).find(".descrp h1").text().trim();
-      const imagen = $(el).find(".miniatura_imagen img").attr("src");
-      const precioTexto = $(el).find(".datos strong").text().trim();
+        const precio = parseFloat(precioBaseTextoLimpio);
+        if (nombre && !isNaN(precio) && precio > 0) {
+          const ganancia = 0.25; // 25% de ganancia
+          const precioFinal = (precio * (1 + ganancia)).toFixed(2);
 
-      const precio = parseFloat(
-        precioTexto.replace("$", "").replace(".", "").replace(",", ".")
-      );
+          return {
+            id: index + 1,
+            nombre,
+            precioBase: parseFloat(precio.toFixed(2)),
+            precioFinal: parseFloat(precioFinal),
+            imagen: imagen ? `https://www.nanocell.com.ar/${imagen}` : null,
+          };
+        }
 
-      if (nombre && !isNaN(precio)) {
-        const ganancia = 0.25; // 25% de ganancia
-        const precioFinal = (precio * (1 + ganancia)).toFixed(2);
+        return null;
+      })
+      .filter((producto) => producto !== null);
 
-        productos.push({
-          id: i + 1,
-          nombre,
-          precioBase: precio,
-          precioFinal,
-          imagen: imagen ? `https://www.nanocell.com.ar/${imagen}` : null,
-        });
-      }
-    });
-
-    res.status(200).json(productos);
+    res.status(200).json(productosProcesados);
   } catch (error) {
-    console.error("Error al scrapear:", error.message);
-    res.status(500).json({ error: "Error obteniendo productos" });
+    console.error("Error al obtener productos de la API:", error.message);
+    res.status(500).json({ error: "Error obteniendo productos de la API" });
   }
 }
