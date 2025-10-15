@@ -57,11 +57,28 @@ export default async function handler(req, res) {
       }
     });
     if (productos.length === 0) {
-      return res.status(200).json({
-        status: "SUCCESS_NO_PRODUCTS_FOUND",
-        message:
-          "Se obtuvo el HTML pero no se encontraron productos con el selector.",
-      });
+      // ⚠️ CAMBIAR ESTO: Devolvemos el HTML en lugar del error
+      console.warn(
+        "No se encontraron productos. Devolviendo HTML para debugging."
+      );
+
+      // Devolvemos el HTML como texto para que lo veas en el navegador/cliente
+      res.status(200).send(htmlContent);
+
+      // Asegurate de salir de la función
+      return;
+    }
+    if (productos.length === 0) {
+      // ⚠️ CAMBIAR ESTO: Devolvemos el HTML en lugar del error
+      console.warn(
+        "No se encontraron productos. Devolviendo HTML para debugging."
+      );
+
+      // Devolvemos el HTML como texto para que lo veas en el navegador/cliente
+      res.status(200).send(htmlContent);
+
+      // Asegurate de salir de la función
+      return;
     }
 
     res.status(200).json(productos);
