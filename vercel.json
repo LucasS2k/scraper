@@ -4,6 +4,6 @@
     { "src": "api/products.js", "use": "@vercel/node" }
   ],
   "routes": [
-    { "src": "/(.*)", "dest": "/api/scraper.js" }
+    { "src": "/(.*)", "dest": "/api/products.js" }
   ]
 }
