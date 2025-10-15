@@ -57,27 +57,22 @@ export default async function handler(req, res) {
       }
     });
     if (productos.length === 0) {
-      // ⚠️ CAMBIAR ESTO: Devolvemos el HTML en lugar del error
       console.warn(
         "No se encontraron productos. Devolviendo HTML para debugging."
       );
-
-      // Devolvemos el HTML como texto para que lo veas en el navegador/cliente
+      res.setHeader("Access-Control-Allow-Origin", "*");
+      res.setHeader("Access-Control-Allow-Methods", "GET");
       res.status(200).send(htmlContent);
 
-      // Asegurate de salir de la función
       return;
     }
     if (productos.length === 0) {
-      // ⚠️ CAMBIAR ESTO: Devolvemos el HTML en lugar del error
       console.warn(
         "No se encontraron productos. Devolviendo HTML para debugging."
       );
 
-      // Devolvemos el HTML como texto para que lo veas en el navegador/cliente
       res.status(200).send(htmlContent);
 
-      // Asegurate de salir de la función
       return;
     }
 
