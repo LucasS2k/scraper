@@ -2,7 +2,7 @@ import * as cheerio from "cheerio";
 import puppeteer from "puppeteer-core";
 import chromium from "@sparticuz/chromium";
 
-const URL = "https://www.nanocell.com.ar/catalogo2024.php";
+const URL = "https://www.nanocell.com.ar";
 
 export default async function handler(req, res) {
   let browser = null;
