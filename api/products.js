@@ -29,7 +29,7 @@ export default async function handler(req, res) {
     const htmlContent = await page.content();
 
     const $ = cheerio.load(htmlContent);
-    const selector = ".col-md-6.col-lg-3.caja_producto";
+    const selector = "div.col-lg-3.caja_producto";
     const productos = [];
 
     $(selector).each((i, el) => {
