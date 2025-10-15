@@ -1,54 +1,82 @@
-import axios from "axios";
 import * as cheerio from "cheerio";
+import puppeteer from "puppeteer-core";
+import chromium from "@sparticuz/chromium";
+
+const URL = "https://www.nanocell.com.ar/catalogo2024.php";
 
 export default async function handler(req, res) {
+  let browser = null;
   try {
-    const { data } = await axios.get(
-      "https://www.nanocell.com.ar/catalogo2024.php",
-      {
-        headers: {
-          // Copiado de los headers de tu navegador para simularlo
-          Accept:
-            "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-          "Accept-Encoding": "gzip, deflate, br, zstd",
-          "Accept-Language": "es-US,es;q=0.9,en;q=0.8,en;q=0.7",
-          Connection: "keep-alive",
-          // El User-Agent es crucial para que el servidor piense que es Chrome
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36", // Usar un User-Agent reciente
-        },
-      }
+    browser = await puppeteer.launch({
+      args: [...chromium.args, "--hide-scrollbars", "--disable-web-security"],
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: true,
+      ignoreHTTPSErrors: true,
+    });
+
+    const page = await browser.newPage();
+
+    await page.setUserAgent(
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
     );
-    const $ = cheerio.load(data);
+
+    await page.goto(URL, {
+      waitUntil: "networkidle0",
+      timeout: 30000,
+    });
+
+    const htmlContent = await page.content();
+
+    const $ = cheerio.load(htmlContent);
 
     const productos = [];
 
     $(".caja_producto").each((i, el) => {
       const nombre = $(el).find(".descrp h1").text().trim();
       const imagen = $(el).find(".miniatura_imagen img").attr("src");
+
       const precioTexto = $(el).find(".datos strong").text().trim();
 
-      const precio = parseFloat(
-        precioTexto.replace("$", "").replace(".", "").replace(",", ".")
-      );
+      const precioLimpio = precioTexto
+        .replace("$", "")
+        .replace(".", "")
+        .replace(",", ".");
+      const precio = parseFloat(precioLimpio);
 
-      if (nombre && !isNaN(precio)) {
-        const ganancia = 0.25; // 25% de ganancia
+      if (nombre && !isNaN(precio) && precio > 0) {
+        const ganancia = 0.25;
         const precioFinal = (precio * (1 + ganancia)).toFixed(2);
-
         productos.push({
           id: i + 1,
           nombre,
-          precioBase: precio,
-          precioFinal,
+          precioBase: parseFloat(precio.toFixed(2)),
+          precioFinal: parseFloat(precioFinal),
           imagen: imagen ? `https://www.nanocell.com.ar/${imagen}` : null,
         });
       }
     });
+    if (productos.length === 0) {
+      return res
+        .status(200)
+        .json({
+          status: "SUCCESS_NO_PRODUCTS_FOUND",
+          message:
+            "Se obtuvo el HTML pero no se encontraron productos con el selector.",
+        });
+    }
 
     res.status(200).json(productos);
   } catch (error) {
-    console.error("Error al scrapear:", error.message);
-    res.status(500).json({ error: "Error obteniendo productos" });
+    // Es fundamental ver este error en los logs de Vercel
+    console.error("Error al scrapear con Puppeteer:", error.message);
+    // Si falla, devolvemos un 500 para el cliente
+    res
+      .status(500)
+      .json({ error: `Error obteniendo productos: ${error.message}` });
+  } finally {
+    if (browser) {
+      await browser.close(); // Cerrar el navegador para liberar recursos
+    }
   }
 }

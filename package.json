@@ -6,7 +6,9 @@
     "start": "vercel dev"
   },
   "dependencies": {
+    "@sparticuz/chromium": "^141.0.0",
     "axios": "^1.6.0",
-    "cheerio": "^1.0.0-rc.12"
+    "cheerio": "^1.0.0-rc.12",
+    "puppeteer-core": "^24.25.0"
   }
 }
