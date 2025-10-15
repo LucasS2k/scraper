@@ -36,7 +36,7 @@ export default async function handler(req, res) {
     );
 
     await page.goto(URL, {
-      waitUntil: "networkidle0",
+      waitUntil: "domcontentloaded",
       timeout: 45000,
     });
 
@@ -59,7 +59,7 @@ export default async function handler(req, res) {
       const precio = parseFloat(precioLimpio);
 
       if (nombre && !isNaN(precio) && precio > 0) {
-        const ganancia = 0.25;
+        const ganancia = 0.45;
         const precioFinal = (precio * (1 + ganancia)).toFixed(2);
         productos.push({
           id: i + 1,
