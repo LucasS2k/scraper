@@ -1,7 +1,7 @@
 {
   "version": 2,
   "builds": [
-    { "src": "api/scraper.js", "use": "@vercel/node" }
+    { "src": "api/products.js", "use": "@vercel/node" }
   ],
   "routes": [
     { "src": "/(.*)", "dest": "/api/scraper.js" }
