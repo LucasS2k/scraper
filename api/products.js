@@ -5,19 +5,6 @@ import chromium from "@sparticuz/chromium";
 const URL = "https://www.nanocell.com.ar";
 
 export default async function handler(req, res) {
-  if (req.method === "OPTIONS") {
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
-    res.setHeader(
-      "Access-Control-Allow-Headers",
-      "Content-Type, Authorization"
-    );
-    res.setHeader("Access-Control-Max-Age", "86400");
-    return res.status(204).end();
-  }
-
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET");
   let browser = null;
   try {
     browser = await puppeteer.launch({
@@ -35,8 +22,8 @@ export default async function handler(req, res) {
     );
 
     await page.goto(URL, {
-      waitUntil: "domcontentloaded",
-      timeout: 45000,
+      waitUntil: "networkidle0",
+      timeout: 30000,
     });
 
     const htmlContent = await page.content();
@@ -58,10 +45,13 @@ export default async function handler(req, res) {
       const precio = parseFloat(precioLimpio);
 
       if (nombre && !isNaN(precio) && precio > 0) {
+        const ganancia = 0.50;
+        const precioFinal = (precio * (1 + ganancia)).toFixed(2);
         productos.push({
           id: i + 1,
           nombre,
           precioBase: parseFloat(precio.toFixed(2)),
+          precioFinal: parseFloat(precioFinal),
           imagen: imagen ? `https://www.nanocell.com.ar/${imagen}` : null,
         });
       }
