@@ -58,13 +58,10 @@ export default async function handler(req, res) {
       const precio = parseFloat(precioLimpio);
 
       if (nombre && !isNaN(precio) && precio > 0) {
-        const ganancia = 0.75;
-        const precioFinal = (precio * (1 + ganancia)).toFixed(2);
         productos.push({
           id: i + 1,
           nombre,
           precioBase: parseFloat(precio.toFixed(2)),
-          precioFinal: parseFloat(precioFinal),
           imagen: imagen ? `https://www.nanocell.com.ar/${imagen}` : null,
         });
       }
