@@ -6,17 +6,16 @@ const URL = "https://www.nanocell.com.ar";
 
 export default async function handler(req, res) {
   if (req.method === "OPTIONS") {
-    res.setHeader("Access-Control-Allow-Origin", "*"); // O 'http://localhost:3000'
+    res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
     res.setHeader(
       "Access-Control-Allow-Headers",
       "Content-Type, Authorization"
     );
     res.setHeader("Access-Control-Max-Age", "86400");
-    return res.status(204).end(); // Responder 204 (No Content) y TERMINAR
+    return res.status(204).end();
   }
 
-  // 🛑 2. APLICAR CORS A LA RESPUESTA GET
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET");
   let browser = null;
